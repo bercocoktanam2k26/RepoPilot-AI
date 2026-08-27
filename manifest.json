@@ -1,0 +1,9 @@
+{
+  "name": "RepoPilot AI",
+  "short_name": "RepoPilot",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#151a22",
+  "icons": []
+}
