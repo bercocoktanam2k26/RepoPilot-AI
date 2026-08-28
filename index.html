@@ -137,7 +137,7 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
         <label>Tanggal<input id="tanggal" type="date" required></label>
       </div>
       <label>Deskripsi<textarea id="deskripsi" placeholder="Tulis deskripsi video..."></textarea></label>
-      <label>Gambar OG (cover) — wajib diisi
+      <label>Gambar OG (cover) — opsional
         <input id="ogImageFile" type="file" accept="image/*" onchange="handleOgImageSelect(event)">
       </label>
       <input type="hidden" id="ogImage">
@@ -505,10 +505,6 @@ $("videoForm").onsubmit = e => {
   e.preventDefault();
 
   const ogImage = $("ogImage").value.trim();
-  if(!ogImage){
-    alert("Gambar OG wajib diisi. Pilih file gambar dan tunggu sampai proses unggah selesai.");
-    return;
-  }
 
   const i = $("editIndex").value;
   const value = {
