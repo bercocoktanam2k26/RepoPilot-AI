@@ -6,199 +6,261 @@
 
 <title>RepoPilot AI Programmer</title>
 
-<meta name="description"
-content="RepoPilot AI Programmer untuk membaca dan memahami repository GitHub.">
-
 <style>
-:root {
-  --bg: #0f1117;
-  --card: #171a23;
-  --card2: #1e2330;
-  --text: #f1f5f9;
-  --muted: #9ca3af;
-  --border: #2b3242;
-  --accent: #7c5cff;
-  --accent2: #5eead4;
-  --danger: #ef4444;
-}
-
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Arial, sans-serif;
+    margin: 0;
+    background: #0d1117;
+    color: #f0f6fc;
+    font-family: Arial, sans-serif;
 }
 
 .container {
-  width: 100%;
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
 }
 
-.header {
-  padding: 30px 0 20px;
+header {
+    margin-bottom: 20px;
 }
 
 .logo {
-  font-size: 30px;
-  font-weight: bold;
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .logo span {
-  color: var(--accent2);
+    color: #58a6ff;
 }
 
 .subtitle {
-  color: var(--muted);
-  margin-top: 8px;
+    color: #8b949e;
+    margin-top: 6px;
 }
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 18px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
 }
 
 h2 {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #123b32;
-  color: var(--accent2);
-  border-radius: 20px;
-  font-size: 13px;
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: #12351f;
+    color: #3fb950;
+    font-size: 13px;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  background: var(--accent2);
-  border-radius: 50%;
-}
-
-.repo {
-  margin-top: 15px;
-  padding: 14px;
-  background: var(--card2);
-  border-radius: 10px;
-}
-
-.repo-name {
-  font-weight: bold;
-}
-
-.repo-branch {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 5px;
-}
-
-textarea {
-  width: 100%;
-  min-height: 130px;
-  resize: vertical;
-  background: #0b0e14;
-  color: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 15px;
-  font-size: 15px;
-  outline: none;
-}
-
-textarea:focus {
-  border-color: var(--accent);
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
 }
 
 button {
-  border: 0;
-  border-radius: 10px;
-  padding: 13px 20px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
+    border: 0;
+    border-radius: 8px;
+    padding: 11px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.ask-btn {
-  margin-top: 12px;
-  background: var(--accent);
-  color: white;
+button:disabled {
+    opacity: .5;
 }
 
-.ask-btn:disabled {
-  opacity: .6;
-  cursor: wait;
+.primary {
+    background: #238636;
+    color: white;
 }
 
-.secondary-btn {
-  background: var(--card2);
-  color: white;
-  border: 1px solid var(--border);
+.blue {
+    background: #1f6feb;
+    color: white;
 }
 
-.result {
-  white-space: pre-wrap;
-  line-height: 1.65;
-  color: #e5e7eb;
+.gray {
+    background: #30363d;
+    color: white;
 }
 
-.loading {
-  color: var(--muted);
-}
-
-.error {
-  color: #fca5a5;
-}
-
-.video-list {
-  display: grid;
-  gap: 10px;
+.red {
+    background: #da3633;
+    color: white;
 }
 
 .video {
-  padding: 13px;
-  background: var(--card2);
-  border-radius: 9px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.video-number {
+    color: #8b949e;
+    font-size: 12px;
+    margin-bottom: 8px;
 }
 
 .video-title {
-  font-weight: bold;
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 8px;
 }
 
-.video-date {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 4px;
+.video-info {
+    color: #8b949e;
+    font-size: 13px;
+    margin-bottom: 5px;
+    word-break: break-all;
 }
 
-pre.debug {
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: #080a0f;
-  padding: 15px;
-  border-radius: 10px;
-  overflow-x: auto;
-  font-size: 12px;
-  color: #a7f3d0;
+.video-description {
+    margin-top: 10px;
+    color: #c9d1d9;
+    line-height: 1.5;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.empty {
+    color: #8b949e;
+    text-align: center;
+    padding: 30px;
+}
+
+textarea,
+input {
+    width: 100%;
+    background: #0d1117;
+    color: white;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+input {
+    margin-bottom: 12px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: #c9d1d9;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.modal-box {
+    max-width: 600px;
+    margin: 30px auto;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+pre {
+    background: #010409;
+    border: 1px solid #30363d;
+    padding: 15px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    display: none;
+}
+
+.success {
+    background: #12351f;
+    color: #3fb950;
+}
+
+.error {
+    background: #3d1618;
+    color: #ff7b72;
+}
+
+.warning {
+    background: #3b2e0b;
+    color: #d29922;
 }
 
 .footer {
-  text-align: center;
-  color: var(--muted);
-  font-size: 12px;
-  padding: 30px 0;
+    text-align: center;
+    color: #8b949e;
+    font-size: 12px;
+    padding: 30px 0;
+}
+
+@media (max-width: 600px) {
+
+    .container {
+        padding: 12px;
+    }
+
+    .toolbar button {
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .actions button {
+        flex: 1;
+    }
+
 }
 </style>
 </head>
@@ -207,121 +269,195 @@ pre.debug {
 
 <div class="container">
 
-  <header class="header">
-    <div class="logo">🤖 Repo<span>Pilot</span></div>
+<header>
+
+    <div class="logo">
+        🤖 Repo<span>Pilot</span>
+    </div>
 
     <div class="subtitle">
-      AI Programmer untuk repository GitHub
+        AI Programmer & GitHub JSON Editor
     </div>
-  </header>
+
+</header>
 
 
-  <!-- STATUS -->
+<!-- CONNECTION -->
 
-  <section class="card">
+<div class="card">
 
-    <h2>Connection</h2>
+    <h2>🔗 Repository</h2>
 
     <div class="status">
-      <span class="dot"></span>
-      Cloudflare API
+        ● Connected
     </div>
 
-    <div class="repo">
-      <div class="repo-name">
-        bercocoktanam2k26 / kebun-indonesia
-      </div>
-
-      <div class="repo-branch">
-        Branch: main
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- GEMINI -->
-
-  <section class="card">
-
-    <h2>💬 Tanya RepoPilot</h2>
-
-    <p style="color:#9ca3af;">
-      Tanyakan sesuatu tentang repository atau kode kamu.
+    <p>
+        <strong>bercocoktanam2k26/kebun-indonesia</strong>
     </p>
 
-    <textarea
-      id="prompt"
-      placeholder="Contoh: Jelaskan isi videos.json saya."
-    ></textarea>
+    <p style="color:#8b949e;">
+        File: videos.json
+    </p>
 
-    <button
-      id="askButton"
-      class="ask-btn"
-      onclick="askRepoPilot()"
-    >
-      Tanya RepoPilot
-    </button>
-
-  </section>
+</div>
 
 
-  <!-- JAWABAN -->
+<!-- VIDEO EDITOR -->
 
-  <section class="card">
+<div class="card">
 
-    <h2>🤖 Jawaban Gemini</h2>
+    <h2>🎬 Video Manager</h2>
 
-    <div id="answer" class="result">
-      Belum ada pertanyaan.
+    <div class="toolbar">
+
+        <button
+            class="blue"
+            onclick="loadVideos()">
+            🔄 Muat Data
+        </button>
+
+        <button
+            class="primary"
+            onclick="openAddModal()">
+            ➕ Tambah Video
+        </button>
+
+        <button
+            class="gray"
+            onclick="previewJSON()">
+            👁️ Preview JSON
+        </button>
+
+        <button
+            class="primary"
+            onclick="saveToGitHub()">
+            💾 Simpan ke GitHub
+        </button>
+
     </div>
 
-  </section>
-
-
-  <!-- VIDEOS -->
-
-  <section class="card">
-
-    <h2>🎬 videos.json</h2>
-
-    <button
-      class="secondary-btn"
-      onclick="loadVideos()"
-    >
-      Baca Repository
-    </button>
-
-    <div
-      id="videos"
-      class="video-list"
-      style="margin-top:15px;"
-    >
-      Belum membaca repository.
+    <div id="message"
+         class="message">
     </div>
 
-  </section>
+    <div id="videoList">
+
+        <div class="empty">
+            Tekan "Muat Data" untuk membaca videos.json.
+        </div>
+
+    </div>
+
+</div>
 
 
-  <!-- DEBUG -->
+<!-- PREVIEW -->
 
-  <section class="card">
+<div class="card">
 
-    <h2>🔧 API Response</h2>
+    <h2>📄 JSON Preview</h2>
 
-    <pre
-      id="debug"
-      class="debug"
-    >Belum ada response.</pre>
+    <pre id="jsonPreview">
+Belum ada preview.
+    </pre>
 
-  </section>
+</div>
 
 
-  <footer class="footer">
-    RepoPilot AI Programmer
-    <br>
+<!-- MODAL EDIT -->
+
+<div id="editModal"
+     class="modal">
+
+    <div class="modal-box">
+
+        <h2 id="modalTitle">
+            Tambah Video
+        </h2>
+
+        <div class="form-group">
+
+            <label>
+                Judul Video
+            </label>
+
+            <input
+                id="inputJudul"
+                type="text"
+                placeholder="Contoh: Bercocok Tanam Indonesia Part 8">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Google Drive ID
+            </label>
+
+            <input
+                id="inputDriveId"
+                type="text"
+                placeholder="Masukkan Google Drive ID">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Tanggal
+            </label>
+
+            <input
+                id="inputTanggal"
+                type="text"
+                placeholder="Contoh: 28 Agustus 2026">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Deskripsi
+            </label>
+
+            <textarea
+                id="inputDeskripsi"
+                placeholder="Tulis deskripsi video..."></textarea>
+
+        </div>
+
+
+        <div class="modal-buttons">
+
+            <button
+                class="primary"
+                onclick="saveVideoForm()">
+                Simpan
+            </button>
+
+            <button
+                class="gray"
+                onclick="closeModal()">
+                Batal
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer class="footer">
+
+    RepoPilot AI Programmer<br>
     GitHub + Cloudflare Workers + Gemini
-  </footer>
+
+</footer>
 
 </div>
 
@@ -329,265 +465,671 @@ pre.debug {
 <script>
 
 /*
-===========================================================
-KONFIGURASI
-===========================================================
+====================================================
+CONFIGURATION
+====================================================
 */
 
 const API_URL =
-  "https://repopilot-api.elableken-6a1.workers.dev";
+    "https://repopilot-api.elableken-6a1.workers.dev";
+
+let videos = [];
+
+let editingIndex = -1;
 
 
 /*
-===========================================================
-TANYA GEMINI
-===========================================================
+====================================================
+MESSAGE
+====================================================
 */
 
-async function askRepoPilot() {
+function showMessage(
+    text,
+    type = "success"
+) {
 
-  const promptElement =
-    document.getElementById("prompt");
+    const box =
+        document.getElementById("message");
 
-  const answerElement =
-    document.getElementById("answer");
+    box.textContent = text;
 
-  const button =
-    document.getElementById("askButton");
+    box.className =
+        "message " + type;
 
-  const debugElement =
-    document.getElementById("debug");
-
-  const prompt =
-    promptElement.value.trim();
-
-  if (!prompt) {
-
-    answerElement.innerHTML =
-      '<div class="error">Silakan tulis pertanyaan terlebih dahulu.</div>';
-
-    return;
-  }
-
-
-  button.disabled = true;
-
-  button.textContent =
-    "Gemini sedang berpikir...";
-
-  answerElement.innerHTML =
-    '<div class="loading">Menghubungi RepoPilot...</div>';
-
-  debugElement.textContent =
-    "Mengirim request...";
-
-
-  try {
-
-    const response =
-      await fetch(
-        API_URL + "/ask",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            prompt: prompt
-          })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    debugElement.textContent =
-      JSON.stringify(
-        data,
-        null,
-        2
-      );
-
-
-    if (!data.success) {
-
-      answerElement.innerHTML =
-        '<div class="error">' +
-        escapeHTML(
-          data.error ||
-          "Terjadi kesalahan."
-        ) +
-        '</div>';
-
-      return;
-    }
-
-
-    answerElement.textContent =
-      data.answer ||
-      "Gemini tidak memberikan jawaban.";
-
-
-  } catch (error) {
-
-    answerElement.innerHTML =
-      '<div class="error">' +
-      escapeHTML(error.message) +
-      '</div>';
-
-    debugElement.textContent =
-      error.stack ||
-      error.message;
-
-  } finally {
-
-    button.disabled = false;
-
-    button.textContent =
-      "Tanya RepoPilot";
-
-  }
+    box.style.display =
+        "block";
 
 }
 
 
 /*
-===========================================================
-BACA VIDEOS.JSON
-===========================================================
+====================================================
+LOAD VIDEOS
+====================================================
 */
 
 async function loadVideos() {
 
-  const container =
-    document.getElementById("videos");
-
-  const debug =
-    document.getElementById("debug");
-
-
-  container.innerHTML =
-    '<div class="loading">Membaca repository...</div>';
-
-
-  try {
-
-    const response =
-      await fetch(
-        API_URL + "/github"
-      );
-
-
-    const data =
-      await response.json();
-
-
-    debug.textContent =
-      JSON.stringify(
-        data,
-        null,
-        2
-      );
-
-
-    if (!data.success) {
-
-      container.innerHTML =
-        '<div class="error">' +
-        escapeHTML(
-          data.error ||
-          "Gagal membaca repository."
-        ) +
-        '</div>';
-
-      return;
-    }
-
-
-    const videos =
-      data.videos;
-
-
-    if (
-      !Array.isArray(videos) ||
-      videos.length === 0
-    ) {
-
-      container.innerHTML =
-        "Tidak ada video.";
-
-      return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    videos.forEach(
-      (video, index) => {
-
-        const element =
-          document.createElement("div");
-
-        element.className =
-          "video";
-
-
-        element.innerHTML = `
-          <div class="video-title">
-            ${index + 1}. ${escapeHTML(video.judul || "Tanpa judul")}
-          </div>
-
-          <div class="video-date">
-            ${escapeHTML(video.tanggal || "")}
-          </div>
-        `;
-
-
-        container.appendChild(
-          element
-        );
-
-      }
+    showMessage(
+        "Sedang membaca videos.json...",
+        "warning"
     );
 
+    try {
 
-  } catch (error) {
+        const response =
+            await fetch(
+                API_URL + "/github"
+            );
 
-    container.innerHTML =
-      '<div class="error">' +
-      escapeHTML(error.message) +
-      '</div>';
+        const data =
+            await response.json();
 
-    debug.textContent =
-      error.stack ||
-      error.message;
+        if (!data.success) {
 
-  }
+            throw new Error(
+                data.error ||
+                "Gagal membaca repository."
+            );
+
+        }
+
+        if (!Array.isArray(data.videos)) {
+
+            throw new Error(
+                "Format videos.json tidak valid."
+            );
+
+        }
+
+        videos =
+            data.videos.map(video => ({
+
+                judul:
+                    String(
+                        video.judul || ""
+                    ),
+
+                driveId:
+                    String(
+                        video.driveId || ""
+                    ),
+
+                tanggal:
+                    String(
+                        video.tanggal || ""
+                    ),
+
+                deskripsi:
+                    String(
+                        video.deskripsi || ""
+                    )
+
+            }));
+
+        renderVideos();
+
+        previewJSON();
+
+        showMessage(
+            `Berhasil memuat ${videos.length} video.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+    }
 
 }
 
 
 /*
-===========================================================
-KEAMANAN OUTPUT HTML
-===========================================================
+====================================================
+RENDER VIDEOS
+====================================================
+*/
+
+function renderVideos() {
+
+    const container =
+        document.getElementById(
+            "videoList"
+        );
+
+    if (videos.length === 0) {
+
+        container.innerHTML =
+            `<div class="empty">
+                Belum ada video.
+             </div>`;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    videos.forEach(
+        (video, index) => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "video";
+
+            item.innerHTML = `
+
+                <div class="video-number">
+                    VIDEO #${index + 1}
+                </div>
+
+                <div class="video-title">
+                    ${escapeHTML(
+                        video.judul
+                    )}
+                </div>
+
+                <div class="video-info">
+                    📁 Drive ID:
+                    ${escapeHTML(
+                        video.driveId
+                    )}
+                </div>
+
+                <div class="video-info">
+                    📅 ${escapeHTML(
+                        video.tanggal
+                    )}
+                </div>
+
+                <div class="video-description">
+                    ${escapeHTML(
+                        video.deskripsi ||
+                        "Tidak ada deskripsi."
+                    )}
+                </div>
+
+                <div class="actions">
+
+                    <button
+                        class="blue"
+                        onclick="openEditModal(${index})">
+                        ✏️ Edit
+                    </button>
+
+                    <button
+                        class="red"
+                        onclick="deleteVideo(${index})">
+                        🗑️ Hapus
+                    </button>
+
+                </div>
+
+            `;
+
+            container.appendChild(item);
+
+        }
+    );
+
+}
+
+
+/*
+====================================================
+ADD VIDEO
+====================================================
+*/
+
+function openAddModal() {
+
+    editingIndex = -1;
+
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
+        "➕ Tambah Video";
+
+    document.getElementById(
+        "inputJudul"
+    ).value = "";
+
+    document.getElementById(
+        "inputDriveId"
+    ).value = "";
+
+    document.getElementById(
+        "inputTanggal"
+    ).value = "";
+
+    document.getElementById(
+        "inputDeskripsi"
+    ).value = "";
+
+    document.getElementById(
+        "editModal"
+    ).style.display =
+        "block";
+
+}
+
+
+/*
+====================================================
+EDIT VIDEO
+====================================================
+*/
+
+function openEditModal(index) {
+
+    editingIndex = index;
+
+    const video =
+        videos[index];
+
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
+        "✏️ Edit Video";
+
+    document.getElementById(
+        "inputJudul"
+    ).value =
+        video.judul;
+
+    document.getElementById(
+        "inputDriveId"
+    ).value =
+        video.driveId;
+
+    document.getElementById(
+        "inputTanggal"
+    ).value =
+        video.tanggal;
+
+    document.getElementById(
+        "inputDeskripsi"
+    ).value =
+        video.deskripsi;
+
+    document.getElementById(
+        "editModal"
+    ).style.display =
+        "block";
+
+}
+
+
+/*
+====================================================
+SAVE FORM
+====================================================
+*/
+
+function saveVideoForm() {
+
+    const judul =
+        document.getElementById(
+            "inputJudul"
+        ).value.trim();
+
+    const driveId =
+        document.getElementById(
+            "inputDriveId"
+        ).value.trim();
+
+    const tanggal =
+        document.getElementById(
+            "inputTanggal"
+        ).value.trim();
+
+    const deskripsi =
+        document.getElementById(
+            "inputDeskripsi"
+        ).value.trim();
+
+
+    if (!judul) {
+
+        alert(
+            "Judul video wajib diisi."
+        );
+
+        return;
+
+    }
+
+
+    if (!driveId) {
+
+        alert(
+            "Google Drive ID wajib diisi."
+        );
+
+        return;
+
+    }
+
+
+    if (!tanggal) {
+
+        alert(
+            "Tanggal wajib diisi."
+        );
+
+        return;
+
+    }
+
+
+    const video = {
+
+        judul:
+            judul,
+
+        driveId:
+            driveId,
+
+        tanggal:
+            tanggal,
+
+        deskripsi:
+            deskripsi
+
+    };
+
+
+    if (editingIndex === -1) {
+
+        videos.push(video);
+
+    } else {
+
+        videos[
+            editingIndex
+        ] = video;
+
+    }
+
+
+    closeModal();
+
+    renderVideos();
+
+    previewJSON();
+
+    showMessage(
+        "Perubahan masih ada di browser. Tekan 'Simpan ke GitHub' untuk menyimpannya.",
+        "warning"
+    );
+
+}
+
+
+/*
+====================================================
+DELETE
+====================================================
+*/
+
+function deleteVideo(index) {
+
+    const video =
+        videos[index];
+
+    const confirmed =
+        confirm(
+            `Hapus video "${video.judul}"?\n\n` +
+            `Perubahan belum akan masuk GitHub sampai kamu menekan "Simpan ke GitHub".`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    videos.splice(
+        index,
+        1
+    );
+
+    renderVideos();
+
+    previewJSON();
+
+    showMessage(
+        "Video dihapus dari editor. Tekan 'Simpan ke GitHub' untuk menerapkan perubahan.",
+        "warning"
+    );
+
+}
+
+
+/*
+====================================================
+PREVIEW JSON
+====================================================
+*/
+
+function previewJSON() {
+
+    document.getElementById(
+        "jsonPreview"
+    ).textContent =
+        JSON.stringify(
+            videos,
+            null,
+            2
+        );
+
+}
+
+
+/*
+====================================================
+SAVE TO GITHUB
+====================================================
+*/
+
+async function saveToGitHub() {
+
+    if (!Array.isArray(videos)) {
+
+        showMessage(
+            "Data video tidak valid.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !confirm(
+            "Simpan perubahan videos.json ke GitHub sekarang?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Sedang menyimpan ke GitHub...",
+        "warning"
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/update-videos",
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            videos:
+                                videos,
+
+                            message:
+                                "Update videos.json via RepoPilot"
+
+                        })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.error ||
+                "GitHub gagal menyimpan."
+            );
+
+        }
+
+
+        showMessage(
+            "✅ videos.json berhasil disimpan ke GitHub!",
+            "success"
+        );
+
+
+        if (
+            data.commitUrl
+        ) {
+
+            showMessage(
+                "✅ Berhasil disimpan. Commit GitHub telah dibuat.",
+                "success"
+            );
+
+        }
+
+
+        previewJSON();
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/*
+====================================================
+MODAL
+====================================================
+*/
+
+function closeModal() {
+
+    document.getElementById(
+        "editModal"
+    ).style.display =
+        "none";
+
+}
+
+
+/*
+====================================================
+ESCAPE HTML
+====================================================
 */
 
 function escapeHTML(value) {
 
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
+
+
+/*
+====================================================
+CLOSE MODAL WHEN CLICK OUTSIDE
+====================================================
+*/
+
+window.onclick =
+    function(event) {
+
+        const modal =
+            document.getElementById(
+                "editModal"
+            );
+
+        if (
+            event.target === modal
+        ) {
+
+            closeModal();
+
+        }
+
+    };
+
+
+/*
+====================================================
+INITIAL LOAD
+====================================================
+*/
+
+loadVideos();
 
 </script>
 
