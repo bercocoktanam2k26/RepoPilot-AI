@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RepoPilot AI Programmer</title>
+
+<meta name="description"
+content="RepoPilot AI Programmer untuk membaca dan memahami repository GitHub.">
+
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #171a23;
+  --card2: #1e2330;
+  --text: #f1f5f9;
+  --muted: #9ca3af;
+  --border: #2b3242;
+  --accent: #7c5cff;
+  --accent2: #5eead4;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  padding: 30px 0 20px;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.logo span {
+  color: var(--accent2);
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #123b32;
+  color: var(--accent2);
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent2);
+  border-radius: 50%;
+}
+
+.repo {
+  margin-top: 15px;
+  padding: 14px;
+  background: var(--card2);
+  border-radius: 10px;
+}
+
+.repo-name {
+  font-weight: bold;
+}
+
+.repo-branch {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 130px;
+  resize: vertical;
+  background: #0b0e14;
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 15px;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ask-btn {
+  margin-top: 12px;
+  background: var(--accent);
+  color: white;
+}
+
+.ask-btn:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.secondary-btn {
+  background: var(--card2);
+  color: white;
+  border: 1px solid var(--border);
+}
+
+.result {
+  white-space: pre-wrap;
+  line-height: 1.65;
+  color: #e5e7eb;
+}
+
+.loading {
+  color: var(--muted);
+}
+
+.error {
+  color: #fca5a5;
+}
+
+.video-list {
+  display: grid;
+  gap: 10px;
+}
+
+.video {
+  padding: 13px;
+  background: var(--card2);
+  border-radius: 9px;
+}
+
+.video-title {
+  font-weight: bold;
+}
+
+.video-date {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+pre.debug {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #080a0f;
+  padding: 15px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 12px;
+  color: #a7f3d0;
+}
+
+.footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 30px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <div class="logo">🤖 Repo<span>Pilot</span></div>
+
+    <div class="subtitle">
+      AI Programmer untuk repository GitHub
+    </div>
+  </header>
+
+
+  <!-- STATUS -->
+
+  <section class="card">
+
+    <h2>Connection</h2>
+
+    <div class="status">
+      <span class="dot"></span>
+      Cloudflare API
+    </div>
+
+    <div class="repo">
+      <div class="repo-name">
+        bercocoktanam2k26 / kebun-indonesia
+      </div>
+
+      <div class="repo-branch">
+        Branch: main
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- GEMINI -->
+
+  <section class="card">
+
+    <h2>💬 Tanya RepoPilot</h2>
+
+    <p style="color:#9ca3af;">
+      Tanyakan sesuatu tentang repository atau kode kamu.
+    </p>
+
+    <textarea
+      id="prompt"
+      placeholder="Contoh: Jelaskan isi videos.json saya."
+    ></textarea>
+
+    <button
+      id="askButton"
+      class="ask-btn"
+      onclick="askRepoPilot()"
+    >
+      Tanya RepoPilot
+    </button>
+
+  </section>
+
+
+  <!-- JAWABAN -->
+
+  <section class="card">
+
+    <h2>🤖 Jawaban Gemini</h2>
+
+    <div id="answer" class="result">
+      Belum ada pertanyaan.
+    </div>
+
+  </section>
+
+
+  <!-- VIDEOS -->
+
+  <section class="card">
+
+    <h2>🎬 videos.json</h2>
+
+    <button
+      class="secondary-btn"
+      onclick="loadVideos()"
+    >
+      Baca Repository
+    </button>
+
+    <div
+      id="videos"
+      class="video-list"
+      style="margin-top:15px;"
+    >
+      Belum membaca repository.
+    </div>
+
+  </section>
+
+
+  <!-- DEBUG -->
+
+  <section class="card">
+
+    <h2>🔧 API Response</h2>
+
+    <pre
+      id="debug"
+      class="debug"
+    >Belum ada response.</pre>
+
+  </section>
+
+
+  <footer class="footer">
+    RepoPilot AI Programmer
+    <br>
+    GitHub + Cloudflare Workers + Gemini
+  </footer>
+
+</div>
+
+
+<script>
+
+/*
+===========================================================
+KONFIGURASI
+===========================================================
+*/
+
+const API_URL =
+  "https://repopilot-api.elableken-6a1.workers.dev";
+
+
+/*
+===========================================================
+TANYA GEMINI
+===========================================================
+*/
+
+async function askRepoPilot() {
+
+  const promptElement =
+    document.getElementById("prompt");
+
+  const answerElement =
+    document.getElementById("answer");
+
+  const button =
+    document.getElementById("askButton");
+
+  const debugElement =
+    document.getElementById("debug");
+
+  const prompt =
+    promptElement.value.trim();
+
+  if (!prompt) {
+
+    answerElement.innerHTML =
+      '<div class="error">Silakan tulis pertanyaan terlebih dahulu.</div>';
+
+    return;
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Gemini sedang berpikir...";
+
+  answerElement.innerHTML =
+    '<div class="loading">Menghubungi RepoPilot...</div>';
+
+  debugElement.textContent =
+    "Mengirim request...";
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL + "/ask",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            prompt: prompt
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    debugElement.textContent =
+      JSON.stringify(
+        data,
+        null,
+        2
+      );
+
+
+    if (!data.success) {
+
+      answerElement.innerHTML =
+        '<div class="error">' +
+        escapeHTML(
+          data.error ||
+          "Terjadi kesalahan."
+        ) +
+        '</div>';
+
+      return;
+    }
+
+
+    answerElement.textContent =
+      data.answer ||
+      "Gemini tidak memberikan jawaban.";
+
+
+  } catch (error) {
+
+    answerElement.innerHTML =
+      '<div class="error">' +
+      escapeHTML(error.message) +
+      '</div>';
+
+    debugElement.textContent =
+      error.stack ||
+      error.message;
+
+  } finally {
+
+    button.disabled = false;
+
+    button.textContent =
+      "Tanya RepoPilot";
+
+  }
+
+}
+
+
+/*
+===========================================================
+BACA VIDEOS.JSON
+===========================================================
+*/
+
+async function loadVideos() {
+
+  const container =
+    document.getElementById("videos");
+
+  const debug =
+    document.getElementById("debug");
+
+
+  container.innerHTML =
+    '<div class="loading">Membaca repository...</div>';
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL + "/github"
+      );
+
+
+    const data =
+      await response.json();
+
+
+    debug.textContent =
+      JSON.stringify(
+        data,
+        null,
+        2
+      );
+
+
+    if (!data.success) {
+
+      container.innerHTML =
+        '<div class="error">' +
+        escapeHTML(
+          data.error ||
+          "Gagal membaca repository."
+        ) +
+        '</div>';
+
+      return;
+    }
+
+
+    const videos =
+      data.videos;
+
+
+    if (
+      !Array.isArray(videos) ||
+      videos.length === 0
+    ) {
+
+      container.innerHTML =
+        "Tidak ada video.";
+
+      return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    videos.forEach(
+      (video, index) => {
+
+        const element =
+          document.createElement("div");
+
+        element.className =
+          "video";
+
+
+        element.innerHTML = `
+          <div class="video-title">
+            ${index + 1}. ${escapeHTML(video.judul || "Tanpa judul")}
+          </div>
+
+          <div class="video-date">
+            ${escapeHTML(video.tanggal || "")}
+          </div>
+        `;
+
+
+        container.appendChild(
+          element
+        );
+
+      }
+    );
+
+
+  } catch (error) {
+
+    container.innerHTML =
+      '<div class="error">' +
+      escapeHTML(error.message) +
+      '</div>';
+
+    debug.textContent =
+      error.stack ||
+      error.message;
+
+  }
+
+}
+
+
+/*
+===========================================================
+KEAMANAN OUTPUT HTML
+===========================================================
+*/
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+</script>
+
+</body>
+</html>
