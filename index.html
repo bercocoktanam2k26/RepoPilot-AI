@@ -548,14 +548,55 @@ function deleteVideo(i){
   showMsg("Video dihapus dari editor. Tekan Simpan ke GitHub untuk menerapkan perubahan.", "warning");
 }
 
-$("videoForm").onsubmit = e => {
+$("videoForm").onsubmit = async e => {
   e.preventDefault();
 
-  const ogImage = $("ogImage").value.trim();
-
+  const submitBtn = $("submitVideoBtn");
   const i = $("editIndex").value;
+  const originalVideo = i !== "" ? videos[Number(i)] : null;
+  const newJudul = $("judul").value.trim();
+  let ogImage = $("ogImage").value.trim();
+
+  /*
+   * Kalau ini edit video, judulnya berubah, dan gambar OG
+   * TIDAK diganti baru (masih URL lama) — nama file cover
+   * di GitHub perlu disesuaikan (rename) supaya tetap
+   * sinkron dengan slug judul baru, karena generate.py di
+   * situs mencari file berdasarkan slug judul.
+   */
+  if(originalVideo && originalVideo.ogImage && ogImage === originalVideo.ogImage){
+    const oldSlug = slugify(originalVideo.judul);
+    const newSlug = slugify(newJudul);
+    if(oldSlug && newSlug && oldSlug !== newSlug){
+      submitBtn.disabled = true;
+      showMsg("🔄 Menyesuaikan nama file gambar OG dengan judul baru...", "warning");
+      try{
+        const response = await fetch(API_URL + "/rename-image", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            project: currentProject,
+            oldPath: `covers/${oldSlug}.jpg`,
+            newPath: `covers/${newSlug}.jpg`
+          })
+        });
+        const data = await response.json();
+        if(data.success){
+          ogImage = data.url;
+          showMsg("✅ Nama file gambar OG berhasil disesuaikan dengan judul baru.", "success");
+        } else {
+          showMsg("⚠️ Gagal menyesuaikan nama file gambar OG: " + (data.error || "tidak diketahui") + ". Judul tetap disimpan, tapi kamu mungkin perlu upload ulang gambarnya.", "warning");
+        }
+      }catch(err){
+        showMsg("⚠️ Gagal menyesuaikan nama file gambar OG: " + err.message, "warning");
+      }finally{
+        submitBtn.disabled = false;
+      }
+    }
+  }
+
   const value = {
-    judul: $("judul").value.trim(),
+    judul: newJudul,
     driveId: $("driveId").value.trim(),
     tanggal: $("tanggal").value,
     deskripsi: $("deskripsi").value.trim(),
