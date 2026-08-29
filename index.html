@@ -80,9 +80,15 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
 <header class="top">
   <div>
     <div class="logo">⚙️ Repo<span>Pilot</span> AI</div>
-    <div class="sub">AI Programmer pribadi untuk kebun-indonesia</div>
+    <div class="sub">AI Programmer pribadi untuk mengelola beberapa repo</div>
   </div>
-  <div class="status connecting" id="statusBadge">● Connecting...</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <select id="projectSelect" style="width:auto;padding:8px 10px">
+      <option value="kebun-indonesia">🌱 kebun-indonesia</option>
+      <option value="kebun-papua">🌏 kebun-papua</option>
+    </select>
+    <div class="status connecting" id="statusBadge">● Connecting...</div>
+  </div>
 </header>
 
 <nav class="nav">
@@ -100,9 +106,9 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
 <section id="home" class="page">
   <div class="panel">
     <h1>RepoPilot AI</h1>
-    <p class="muted">Kelola website GitHub kebun-indonesia langsung dari browser.</p>
+    <p class="muted">Kelola website GitHub langsung dari browser — pilih proyek di pojok kanan atas.</p>
     <div class="grid">
-      <div class="stat">Repository<b>kebun-indonesia</b><span class="muted">bercocoktanam2k26</span></div>
+      <div class="stat">Repository<b id="homeRepoName">-</b><span class="muted">bercocoktanam2k26</span></div>
       <div class="stat">Video<b id="count">0</b><span class="muted">dari videos.json (GitHub)</span></div>
       <div class="stat">Adsterra<b>🔒 Protected</b><span class="muted">tidak disentuh otomatis</span></div>
     </div>
@@ -213,10 +219,9 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
 <section id="repo" class="page hidden">
   <div class="panel">
     <h2>📁 Repository</h2>
-    <p><b>Owner:</b> bercocoktanam2k26</p>
-    <p><b>Repository:</b> kebun-indonesia</p>
-    <p><b>Branch:</b> main &nbsp;•&nbsp; <b>File:</b> videos.json</p>
-    <p><b>Pages:</b> <a href="https://bercocoktanam2k26.github.io/kebun-indonesia/" target="_blank" rel="noopener" style="color:#58a6ff">bercocoktanam2k26.github.io/kebun-indonesia/</a></p>
+    <p><b>Repository:</b> <span id="repoFullName">-</span></p>
+    <p><b>Branch:</b> <span id="repoBranchText">-</span> &nbsp;•&nbsp; <b>File:</b> <span id="repoFileText">-</span></p>
+    <p><b>Pages:</b> <a id="repoPagesLink" href="#" target="_blank" rel="noopener" style="color:#58a6ff">-</a></p>
     <p><b>Status:</b> <span id="repoStatusText" class="muted">menghubungkan...</span></p>
     <div class="actions">
       <button class="secondary" onclick="toggleRawJSON()">👁️ Lihat / Sembunyikan JSON mentah</button>
@@ -244,6 +249,7 @@ let savedVideos = [];  // last known state confirmed on GitHub
 let pendingCandidate = null; // candidate full array while single-item diff is open
 let commitLog = [];
 let selectedAIIndex = -1;
+let currentProject = "kebun-indonesia";
 
 const $ = id => document.getElementById(id);
 
@@ -298,7 +304,7 @@ async function loadVideos(){
   setStatus("connecting");
   showMsg("Sedang membaca videos.json dari GitHub...", "warning");
   try{
-    const response = await fetch(API_URL + "/github");
+    const response = await fetch(API_URL + "/github?project=" + encodeURIComponent(currentProject));
     const data = await response.json();
     if(!data.success) throw new Error(data.error || "Gagal membaca repository.");
     if(!Array.isArray(data.videos)) throw new Error("Format videos.json tidak valid.");
@@ -307,18 +313,35 @@ async function loadVideos(){
       judul: String(v.judul || ""),
       driveId: String(v.driveId || ""),
       tanggal: String(v.tanggal || ""),
-      deskripsi: String(v.deskripsi || "")
+      deskripsi: String(v.deskripsi || ""),
+      ogImage: String(v.ogImage || "")
     }));
     savedVideos = JSON.parse(JSON.stringify(videos));
 
+    updateRepoInfo(data.repository, data.file);
     setStatus("connected");
-    showMsg(`✅ Berhasil memuat ${videos.length} video dari GitHub.`, "success");
+    showMsg(`✅ Berhasil memuat ${videos.length} video dari GitHub (${data.repository}).`, "success");
     renderAll();
   }catch(err){
     setStatus("offline");
     showMsg("❌ " + err.message, "error");
     videos = [];
     renderAll();
+  }
+}
+
+function updateRepoInfo(repository, file){
+  const parts = String(repository || "").split("/");
+  const owner = parts[0];
+  const name = parts[1];
+  $("repoFullName").textContent = repository || "-";
+  $("repoBranchText").textContent = "main";
+  $("repoFileText").textContent = file || "videos.json";
+  $("homeRepoName").textContent = name || currentProject;
+  if(owner && name){
+    const pagesUrl = `https://${owner}.github.io/${name}/`;
+    $("repoPagesLink").href = pagesUrl;
+    $("repoPagesLink").textContent = pagesUrl.replace("https://", "");
   }
 }
 
@@ -489,12 +512,13 @@ async function handleOgImageSelect(event){
     previewEl.src = dataUrl;
     previewEl.classList.remove("hidden");
 
-    statusEl.textContent = "☁️ Mengunggah gambar ke kebun-indonesia...";
+    statusEl.textContent = `☁️ Mengunggah gambar ke ${currentProject}...`;
 
     const response = await fetch(API_URL + "/upload-image", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
+        project: currentProject,
         imageBase64: dataUrl,
         filename: `${slug}.jpg`
       })
@@ -591,7 +615,7 @@ async function confirmSaveToGitHub(){
     const response = await fetch(API_URL + "/update-videos", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({videos, message: "Update videos.json via RepoPilot"})
+      body: JSON.stringify({project: currentProject, videos, message: "Update videos.json via RepoPilot"})
     });
     const data = await response.json();
     if(!data.success) throw new Error(data.error || "GitHub gagal menyimpan.");
@@ -655,7 +679,7 @@ async function generateAI(){
     videoContext = `\nVideo yang sedang dipilih:\nJudul: ${v.judul}\nGoogle Drive ID: ${v.driveId}\nTanggal: ${v.tanggal}\nDeskripsi: ${v.deskripsi}\n`;
   }
 
-  const finalPrompt = `Kamu adalah RepoPilot AI Programmer.\nBantu pengguna mengelola repository:\nbercocoktanam2k26/kebun-indonesia\n\nFile utama: videos.json\nStruktur data:\n[\n  {\n    "judul": "...",\n    "driveId": "...",\n    "tanggal": "...",\n    "deskripsi": "..."\n  }\n]\n${videoContext}\nPermintaan pengguna:\n${prompt}\n\nBerikan jawaban yang siap digunakan.\nJika pengguna meminta judul, berikan hanya judul yang bagus.\nJika pengguna meminta deskripsi, berikan deskripsi tanpa penjelasan tambahan.\nJika pengguna meminta analisis, jelaskan dengan jelas dan ringkas.`;
+  const finalPrompt = `Kamu adalah RepoPilot AI Programmer.\nBantu pengguna mengelola repository:\nbercocoktanam2k26/${currentProject}\n\nFile utama: videos.json\nStruktur data:\n[\n  {\n    "judul": "...",\n    "driveId": "...",\n    "tanggal": "...",\n    "deskripsi": "...",\n    "ogImage": "..."\n  }\n]\n${videoContext}\nPermintaan pengguna:\n${prompt}\n\nBerikan jawaban yang siap digunakan.\nJika pengguna meminta judul, berikan hanya judul yang bagus.\nJika pengguna meminta deskripsi, berikan deskripsi tanpa penjelasan tambahan.\nJika pengguna meminta analisis, jelaskan dengan jelas dan ringkas.`;
 
   resultEl.textContent = "🤖 Gemini sedang berpikir...";
 
@@ -663,7 +687,7 @@ async function generateAI(){
     const response = await fetch(API_URL + "/ask", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({prompt: finalPrompt})
+      body: JSON.stringify({project: currentProject, prompt: finalPrompt})
     });
     const data = await response.json();
     if(!data.success) throw new Error(data.error || "Gemini gagal memberikan jawaban.");
@@ -718,7 +742,28 @@ document.querySelectorAll(".nav button").forEach(b => b.onclick = () => {
   $(b.dataset.page).classList.remove("hidden");
 });
 
+/* ===================== PROJECT SWITCHER ===================== */
+$("projectSelect").addEventListener("change", function(){
+  const nextProject = this.value;
+  const diff = computeDiff(savedVideos, videos);
+  if(diffHasChanges(diff)){
+    if(!confirm("Ada perubahan lokal yang belum disimpan ke GitHub. Pindah proyek akan membuang perubahan tersebut. Lanjutkan?")){
+      this.value = currentProject;
+      return;
+    }
+  }
+  currentProject = nextProject;
+  hideForm();
+  $("diffPanel").classList.add("hidden");
+  $("commitConfirmPanel").classList.add("hidden");
+  pendingCandidate = null;
+  commitLog = [];
+  renderCommitLog();
+  loadVideos();
+});
+
 /* ===================== INITIAL LOAD ===================== */
+currentProject = $("projectSelect").value;
 renderCommitLog();
 loadVideos();
 </script>
