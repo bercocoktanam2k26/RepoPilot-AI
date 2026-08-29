@@ -440,7 +440,20 @@ function hideForm(){ $("formPanel").style.display = "none"; }
 function editVideo(i){ showForm(i); }
 
 /* ===================== OG IMAGE: COMPRESS + UPLOAD ===================== */
-function compressImageFile(file, maxWidth = 1200, maxHeight = 630, quality = 0.8){
+/*
+ * Format cover per proyek — harus cocok dengan konvensi
+ * file yang sudah ada di masing-masing repo.
+ */
+const PROJECT_COVER_FORMAT = {
+  "kebun-indonesia": "jpg",
+  "kebun-papua": "png"
+};
+
+function getCoverFormat(project){
+  return PROJECT_COVER_FORMAT[project] || "jpg";
+}
+
+function compressImageFile(file, format = "jpg", maxWidth = 1200, maxHeight = 630, quality = 0.8){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
@@ -456,10 +469,16 @@ function compressImageFile(file, maxWidth = 1200, maxHeight = 630, quality = 0.8
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        if(format === "png"){
+          // Pertahankan transparansi untuk PNG
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/png"));
+        } else {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        }
       };
       img.src = reader.result;
     };
@@ -508,7 +527,8 @@ async function handleOgImageSelect(event){
   submitBtn.disabled = true;
 
   try{
-    const dataUrl = await compressImageFile(file);
+    const format = getCoverFormat(currentProject);
+    const dataUrl = await compressImageFile(file, format);
     previewEl.src = dataUrl;
     previewEl.classList.remove("hidden");
 
@@ -520,7 +540,7 @@ async function handleOgImageSelect(event){
       body: JSON.stringify({
         project: currentProject,
         imageBase64: dataUrl,
-        filename: `${slug}.jpg`
+        filename: `${slug}.${format}`
       })
     });
     const data = await response.json();
@@ -529,7 +549,7 @@ async function handleOgImageSelect(event){
     $("ogImage").value = data.url;
     previewEl.src = data.url;
     statusEl.className = "upload-status ok";
-    statusEl.textContent = `✅ Gambar berhasil diunggah sebagai covers/${slug}.jpg`;
+    statusEl.textContent = `✅ Gambar berhasil diunggah sebagai covers/${slug}.${format}`;
   }catch(err){
     statusEl.className = "upload-status fail";
     statusEl.textContent = "❌ " + err.message;
@@ -576,8 +596,8 @@ $("videoForm").onsubmit = async e => {
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
             project: currentProject,
-            oldPath: `covers/${oldSlug}.jpg`,
-            newPath: `covers/${newSlug}.jpg`
+            oldPath: `covers/${oldSlug}.${getCoverFormat(currentProject)}`,
+            newPath: `covers/${newSlug}.${getCoverFormat(currentProject)}`
           })
         });
         const data = await response.json();
