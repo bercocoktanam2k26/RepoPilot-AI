@@ -269,6 +269,13 @@ function repairOgUrls(videos, repo){
       oldBases.forEach(oldBase => {
         copy.ogImage = copy.ogImage.replace(oldBase, base);
       });
+      // Legacy GitHub/raw URL atau domain lain yang bukan Pages target
+      // dipetakan ulang berdasarkan slug judul agar Repair benar-benar permanen.
+      if(!copy.ogImage.startsWith(base)){
+        copy.ogImage = buildOgImage(repo, slugify(copy.judul));
+      }
+    } else if(copy.judul){
+      copy.ogImage = buildOgImage(repo, slugify(copy.judul));
     }
     return copy;
   });
@@ -613,8 +620,11 @@ async function handleOgImageSelect(event){
     const data = await response.json();
     if(!data.success) throw new Error(data.error || "Gagal mengunggah gambar.");
 
-    $("ogImage").value = data.url;
-    previewEl.src = data.url;
+    // Worker boleh mengembalikan URL file GitHub/raw; URL OG publik
+    // harus selalu dibentuk secara terpusat dari Pages domain.
+    const publicOgUrl = buildOgImage(currentProject, slug);
+    $("ogImage").value = publicOgUrl;
+    previewEl.src = data.url || publicOgUrl;
     statusEl.className = "upload-status ok";
     statusEl.textContent = `✅ Gambar berhasil diunggah sebagai covers/${slug}.${format}`;
   }catch(err){
@@ -779,6 +789,9 @@ async function confirmSaveToGitHub(){
     return;
   }
   try{
+    // Normalisasi legacy/missing OG URL berdasarkan judul sebelum validasi.
+    // URL yang sudah terisi tetapi menunjuk domain lain tetap ditolak.
+    videos = videos.map(v => ({...v, ogImage: v.ogImage || buildOgImage(currentProject, slugify(v.judul))}));
     validateOgUrls(videos, currentProject);
     downloadVideosBackup(savedVideos, currentProject);
     showMsg("💾 Backup videos.json dibuat. Sedang menyimpan ke GitHub...", "warning");
