@@ -84,8 +84,8 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
   </div>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <select id="projectSelect" style="width:auto;padding:8px 10px">
-      <option value="kebun-indonesia">🌱 kebun-indonesia</option>
-      <option value="kebun-papua">🌏 kebun-papua</option>
+      <option value="indonesia">🌱 indonesia</option>
+      <option value="papua">🌏 papua</option>
     </select>
     <div class="status connecting" id="statusBadge">● Connecting...</div>
   </div>
@@ -108,7 +108,7 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
     <h1>RepoPilot AI</h1>
     <p class="muted">Kelola website GitHub langsung dari browser — pilih proyek di pojok kanan atas.</p>
     <div class="grid">
-      <div class="stat">Repository<b id="homeRepoName">-</b><span class="muted">bercocoktanam2k26</span></div>
+      <div class="stat">Repository<b id="homeRepoName">-</b><span class="muted">viral18plus</span></div>
       <div class="stat">Video<b id="count">0</b><span class="muted">dari videos.json (GitHub)</span></div>
       <div class="stat">Adsterra<b>🔒 Protected</b><span class="muted">tidak disentuh otomatis</span></div>
     </div>
@@ -129,6 +129,7 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
     <div class="toolbar">
       <button class="secondary" onclick="reloadFromGitHub()">🔄 Muat Ulang dari GitHub</button>
       <button class="primary" onclick="showForm()">＋ Tambah Video</button>
+      <button class="purple" onclick="repairAllOgImages()">🛠️ Repair All OG Images</button>
       <button class="blue" id="saveGithubBtn" onclick="openSaveConfirm()" disabled>💾 Simpan ke GitHub<span class="badge-count" id="unsavedCount">0</span></button>
     </div>
   </div>
@@ -242,6 +243,61 @@ pre.raw{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1
 <script>
 /* ===================== CONFIG ===================== */
 const API_URL = "https://repopilot-api.elableken-6a1.workers.dev";
+const GITHUB_OWNER = "viral18plus";
+const REPOSITORIES = {
+  indonesia: "indonesia",
+  papua: "papua"
+};
+
+function buildOgImage(repo, slug){
+  const target = REPOSITORIES[repo];
+  if(!target) throw new Error("Repository target tidak valid: " + repo);
+  return `https://${GITHUB_OWNER}.github.io/${target}/covers/${slug}.jpg`;
+}
+
+function repairOgUrls(videos, repo){
+  const target = REPOSITORIES[repo];
+  if(!target) throw new Error("Repository target tidak valid: " + repo);
+  const base = `https://${GITHUB_OWNER}.github.io/${target}/covers/`;
+  const oldBases = [
+    "https://bercocoktanam2k26.github.io/kebun-indonesia/covers/",
+    "https://bercocoktanam2k26.github.io/kebun-papua/covers/"
+  ];
+  return videos.map(v => {
+    const copy = {...v};
+    if(copy.ogImage){
+      oldBases.forEach(oldBase => {
+        copy.ogImage = copy.ogImage.replace(oldBase, base);
+      });
+    }
+    return copy;
+  });
+}
+
+function validateOgUrls(videos, repo){
+  const target = REPOSITORIES[repo];
+  const expectedPrefix = `https://${GITHUB_OWNER}.github.io/${target}/covers/`;
+  const invalid = videos.filter(v => v.ogImage && !v.ogImage.startsWith(expectedPrefix));
+  if(invalid.length){
+    const names = invalid.slice(0,5).map(v => v.judul).join(", ");
+    throw new Error(`Validasi OG Image gagal untuk ${invalid.length} video. URL harus berada di ${expectedPrefix}. Contoh: ${names}`);
+  }
+}
+
+function downloadVideosBackup(data, repo){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  const filename = `videos-backup-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}.json`;
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 /* ===================== STATE ===================== */
 let videos = [];       // working copy (may include unsaved local edits)
@@ -249,7 +305,7 @@ let savedVideos = [];  // last known state confirmed on GitHub
 let pendingCandidate = null; // candidate full array while single-item diff is open
 let commitLog = [];
 let selectedAIIndex = -1;
-let currentProject = "kebun-indonesia";
+let currentProject = "indonesia";
 
 const $ = id => document.getElementById(id);
 
@@ -362,6 +418,12 @@ function renderAll(){
   refreshRawJSON();
 }
 
+function getCover(video){
+  if(video && video.ogImage) return video.ogImage;
+  if(video && video.judul) return buildOgImage(currentProject, slugify(video.judul));
+  return "";
+}
+
 function renderVideoList(){
   const list = $("videoList");
   if(videos.length === 0){
@@ -371,8 +433,8 @@ function renderVideoList(){
   list.innerHTML = videos.map((v,i) => `
     <div class="video">
       <div class="video-row-main">
-        ${v.ogImage
-          ? `<img class="video-thumb" src="${esc(v.ogImage)}" alt="OG image ${esc(v.judul)}">`
+        ${getCover(v)
+          ? `<img class="video-thumb" src="${esc(getCover(v))}" alt="OG image ${esc(v.judul)}">`
           : `<div class="video-thumb" style="display:flex;align-items:center;justify-content:center;color:#8b949e;font-size:10px;text-align:center">Tanpa gambar OG</div>`}
         <div>
           <h3>${esc(v.judul)}</h3>
@@ -445,12 +507,17 @@ function editVideo(i){ showForm(i); }
  * file yang sudah ada di masing-masing repo.
  */
 const PROJECT_COVER_FORMAT = {
-  "kebun-indonesia": "jpg",
-  "kebun-papua": "png"
+  indonesia: "jpg",
+  papua: "jpg"
 };
 
 function getCoverFormat(project){
   return PROJECT_COVER_FORMAT[project] || "jpg";
+}
+
+function getCoverExtension(url, project){
+  const match = String(url || "").match(/\.([a-z0-9]+)(?:[?#].*)?$/i);
+  return match ? match[1].toLowerCase() : getCoverFormat(project);
 }
 
 function compressImageFile(file, format = "jpg", maxWidth = 1200, maxHeight = 630, quality = 0.8){
@@ -596,8 +663,8 @@ $("videoForm").onsubmit = async e => {
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
             project: currentProject,
-            oldPath: `covers/${oldSlug}.${getCoverFormat(currentProject)}`,
-            newPath: `covers/${newSlug}.${getCoverFormat(currentProject)}`
+            oldPath: `covers/${oldSlug}.${getCoverExtension(originalVideo.ogImage, currentProject)}`,
+            newPath: `covers/${newSlug}.${getCoverExtension(originalVideo.ogImage, currentProject)}`
           })
         });
         const data = await response.json();
@@ -620,7 +687,7 @@ $("videoForm").onsubmit = async e => {
     driveId: $("driveId").value.trim(),
     tanggal: $("tanggal").value,
     deskripsi: $("deskripsi").value.trim(),
-    ogImage: ogImage
+    ogImage: ogImage || buildOgImage(currentProject, slugify(newJudul))
   };
   const candidate = videos.slice();
   if(i === ""){
@@ -649,6 +716,48 @@ function cancelChange(){
   $("diffPanel").classList.add("hidden");
 }
 
+/* ===================== REPAIR ALL OG IMAGES ===================== */
+async function repairAllOgImages(){
+  if(!Array.isArray(videos) || !videos.length){
+    showMsg("Tidak ada videos.json yang bisa diperbaiki.", "warning");
+    return;
+  }
+  const repaired = repairOgUrls(videos, currentProject);
+  const changed = computeDiff(videos, repaired);
+  if(!diffHasChanges(changed)){
+    showMsg("✅ Semua URL OG Image yang terisi sudah menggunakan domain baru.", "success");
+    return;
+  }
+  const invalid = repaired.filter(v => v.ogImage && !v.ogImage.startsWith(`https://${GITHUB_OWNER}.github.io/${REPOSITORIES[currentProject]}/covers/`));
+  if(invalid.length){
+    showMsg("❌ Repair menghasilkan URL OG yang tidak valid. Publish dibatalkan.", "error");
+    return;
+  }
+  if(!confirm(`Perbaiki ${changed.changed.length + changed.added.length} perubahan OG Image di ${currentProject} dan simpan ke GitHub sekarang?\n\nBackup videos.json akan diunduh terlebih dahulu.`)) return;
+  try{
+    validateOgUrls(repaired, currentProject);
+    downloadVideosBackup(savedVideos, currentProject);
+    showMsg("🔧 Memperbaiki URL OG Image dan menyimpan ke GitHub...", "warning");
+    const response = await fetch(API_URL + "/update-videos", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({project: currentProject, videos: repaired, message: "Repair OG Image URLs via RepoPilot"})
+    });
+    const data = await response.json();
+    if(!data.success) throw new Error(data.error || "GitHub gagal menyimpan hasil repair.");
+    videos = repaired;
+    savedVideos = JSON.parse(JSON.stringify(repaired));
+    renderAll();
+    addCommitLog(data.commitUrl);
+    showMsg("✅ Semua URL OG Image lama berhasil diperbaiki dan videos.json disimpan ke GitHub." + (data.commitUrl ? `<br><br><a href="${esc(data.commitUrl)}" target="_blank" rel="noopener">🔗 Lihat Commit GitHub</a>` : ""), "success");
+    await loadVideos();
+  }catch(err){
+    showMsg("❌ " + err.message, "error");
+  }finally{
+    updateUnsavedBadge();
+  }
+}
+
 /* ===================== SAVE TO GITHUB (COMMIT MANAGER) ===================== */
 function openSaveConfirm(){
   const diff = computeDiff(savedVideos, videos);
@@ -669,10 +778,12 @@ async function confirmSaveToGitHub(){
     showMsg("Data video tidak valid.", "error");
     return;
   }
-  showMsg("💾 Sedang menyimpan ke GitHub...", "warning");
-  $("saveGithubBtn").disabled = true;
-
   try{
+    validateOgUrls(videos, currentProject);
+    downloadVideosBackup(savedVideos, currentProject);
+    showMsg("💾 Backup videos.json dibuat. Sedang menyimpan ke GitHub...", "warning");
+    $("saveGithubBtn").disabled = true;
+
     const response = await fetch(API_URL + "/update-videos", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -740,7 +851,7 @@ async function generateAI(){
     videoContext = `\nVideo yang sedang dipilih:\nJudul: ${v.judul}\nGoogle Drive ID: ${v.driveId}\nTanggal: ${v.tanggal}\nDeskripsi: ${v.deskripsi}\n`;
   }
 
-  const finalPrompt = `Kamu adalah RepoPilot AI Programmer.\nBantu pengguna mengelola repository:\nbercocoktanam2k26/${currentProject}\n\nFile utama: videos.json\nStruktur data:\n[\n  {\n    "judul": "...",\n    "driveId": "...",\n    "tanggal": "...",\n    "deskripsi": "...",\n    "ogImage": "..."\n  }\n]\n${videoContext}\nPermintaan pengguna:\n${prompt}\n\nBerikan jawaban yang siap digunakan.\nJika pengguna meminta judul, berikan hanya judul yang bagus.\nJika pengguna meminta deskripsi, berikan deskripsi tanpa penjelasan tambahan.\nJika pengguna meminta analisis, jelaskan dengan jelas dan ringkas.`;
+  const finalPrompt = `Kamu adalah RepoPilot AI Programmer.\nBantu pengguna mengelola repository:\nviral18plus/${currentProject}\n\nFile utama: videos.json\nStruktur data:\n[\n  {\n    "judul": "...",\n    "driveId": "...",\n    "tanggal": "...",\n    "deskripsi": "...",\n    "ogImage": "..."\n  }\n]\n${videoContext}\nPermintaan pengguna:\n${prompt}\n\nBerikan jawaban yang siap digunakan.\nJika pengguna meminta judul, berikan hanya judul yang bagus.\nJika pengguna meminta deskripsi, berikan deskripsi tanpa penjelasan tambahan.\nJika pengguna meminta analisis, jelaskan dengan jelas dan ringkas.`;
 
   resultEl.textContent = "🤖 Gemini sedang berpikir...";
 
