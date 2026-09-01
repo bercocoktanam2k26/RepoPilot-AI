@@ -685,7 +685,9 @@ $("videoForm").onsubmit = async e => {
         });
         const data = await response.json();
         if(data.success){
-          ogImage = data.url;
+          // Worker URL is only for the uploaded file response. OG Image must
+          // always use the public GitHub Pages URL for the selected repository.
+          ogImage = buildOgImage(currentProject, newSlug);
           showMsg("✅ Nama file gambar OG berhasil disesuaikan dengan judul baru.", "success");
         } else {
           showMsg("⚠️ Gagal menyesuaikan nama file gambar OG: " + (data.error || "tidak diketahui") + ". Judul tetap disimpan, tapi kamu mungkin perlu upload ulang gambarnya.", "warning");
