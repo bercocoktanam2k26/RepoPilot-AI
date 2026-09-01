@@ -379,7 +379,13 @@ async function loadVideos(){
       deskripsi: String(v.deskripsi || ""),
       ogImage: String(v.ogImage || "")
     }));
-    savedVideos = JSON.parse(JSON.stringify(videos));
+    // Normalisasi URL OG legacy secara lokal saat memuat data.
+    // Ini memastikan video lama yang masih memakai URL lama tidak
+    // membuat upload video baru gagal validasi. Perubahan repair
+    // tetap lokal sampai pengguna menekan Simpan ke GitHub.
+    const normalizedVideos = repairOgUrls(videos, currentProject);
+    videos = normalizedVideos;
+    savedVideos = JSON.parse(JSON.stringify(data.videos));
 
     updateRepoInfo(data.repository, data.file);
     setStatus("connected");
@@ -789,9 +795,9 @@ async function confirmSaveToGitHub(){
     return;
   }
   try{
-    // Normalisasi legacy/missing OG URL berdasarkan judul sebelum validasi.
-    // URL yang sudah terisi tetapi menunjuk domain lain tetap ditolak.
-    videos = videos.map(v => ({...v, ogImage: v.ogImage || buildOgImage(currentProject, slugify(v.judul))}));
+    // Normalisasi semua URL legacy/missing berdasarkan repository + slug
+    // sebelum validasi. URL lama tidak boleh lolos ke GitHub.
+    videos = repairOgUrls(videos, currentProject);
     validateOgUrls(videos, currentProject);
     downloadVideosBackup(savedVideos, currentProject);
     showMsg("💾 Backup videos.json dibuat. Sedang menyimpan ke GitHub...", "warning");
